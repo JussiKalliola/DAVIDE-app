@@ -8,8 +8,12 @@ Main view controller for the object scanning UI.
 import UIKit
 import SceneKit
 import ARKit
+import MetalKit
+import CoreMotion
 
-class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UIDocumentPickerDelegate {
+
+@available(iOS 13.0, *)
+class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UIDocumentPickerDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     static let appStateChangedNotification = Notification.Name("ApplicationStateChanged")
     static let appStateUserInfoKey = "AppState"
@@ -24,12 +28,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     @IBOutlet weak var instructionView: UIVisualEffectView!
     @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var loadModelButton: RoundedButton!
+    @IBOutlet weak var saveButton: RoundedButton!
     @IBOutlet weak var flashlightButton: FlashlightButton!
     @IBOutlet weak var navigationBar: UINavigationBar!
     @IBOutlet weak var sessionInfoView: UIVisualEffectView!
     @IBOutlet weak var sessionInfoLabel: UILabel!
     @IBOutlet weak var toggleInstructionsButton: RoundedButton!
     
+    @IBOutlet weak var timerLabel: UILabel!
+    @IBOutlet weak var timeSider: UISlider!
     internal var internalState: State = .startARSession
     
     internal var scan: Scan?
@@ -44,6 +51,80 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     internal var expirationTimeOfLastMessage: TimeInterval?
     
     internal var screenCenter = CGPoint()
+    
+    var timeOfRun: Int = 0
+    var labelTimer = Timer()
+    
+    var timer = Timer()
+    var currentARFrame: ARFrame!
+    
+    var textureCache: CVMetalTextureCache!
+    var fileCounter: Int = 0
+    var savedFrames: [SavedFrame] = []
+    
+    var fileManager: FileManagerHelper! = nil
+    
+    var boxPose: BoxPose = BoxPose()
+    
+    var RGBTexture: MTLTexture! = nil
+    var metalDevice: MTLDevice! = nil
+    var computePipelineState: MTLComputePipelineState! = nil
+    
+    let queue = DispatchQueue(label: "save-data", qos: .userInitiated)
+    
+    var capture: ARCapture?
+    var motion: CMMotionManager!
+    var motionData: CMDeviceMotion = CMDeviceMotion()
+    var motionDataArr: [CMDeviceMotion] = []
+    
+    // Motion data
+    //let timestamp = validData.timestamp
+    //let attitude = validData.attitude
+    //let quaternion = validData.attitude.quaternion
+    //let rotationRate = validData.rotationRate
+    //let userAcceleration = validData.userAcceleration
+    //let gravity = validData.gravity
+    
+    let captureSession = AVCaptureSession()
+    let captureDevice = AVCaptureDevice.default(for: .video)
+    var deviceInput: AVCaptureDeviceInput!
+    let output = AVCaptureVideoDataOutput()
+    
+    // to prepare for output; I'll output 640x480 in H.264, via an asset writer
+    let outputSettings: [String: Any] = [
+        AVVideoWidthKey: 1080,
+        AVVideoHeightKey: 1920,
+        AVVideoCodecKey: AVVideoCodecType.h264
+    ]
+    
+    var assetWriterInput: AVAssetWriterInput!
+    
+    // I'm going to push pixel buffers to it, so will need a
+    // AVAssetWriterPixelBufferAdaptor, to expect the same 32BGRA input as I've
+    // asked the AVCaptureVideDataOutput to supply
+    let sourcePixelBufferAttributes: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+    var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor!
+
+    // that's going to go somewhere, I imagine you've got the URL for that sorted,
+    // so create a suitable asset writer; we'll put our H.264 within the normal
+    // MPEG4 container
+    var assetWriter: AVAssetWriter!
+    
+    var videoCapture: VideoCapture!
+    var frameCount: Int64 = 0
+    var fps: Int32 = 30
+    var cameraPoses: [CameraPose] = []
+    
+    // Create an empty texture.
+    func createTexture(metalDevice: MTLDevice, width: Int, height: Int, usage: MTLTextureUsage, pixelFormat: MTLPixelFormat) -> MTLTexture {
+        let descriptor: MTLTextureDescriptor = MTLTextureDescriptor()
+        descriptor.pixelFormat = pixelFormat
+        descriptor.width = width
+        descriptor.height = height
+        descriptor.usage = usage
+        let resTexture = metalDevice.makeTexture(descriptor: descriptor)
+        return resTexture!
+    }
     
     var modelURL: URL? {
         didSet {
@@ -81,8 +162,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        metalDevice = EnvironmentVariables.shared.metalDevice
+        
+        RGBTexture = self.createTexture(metalDevice: metalDevice!,
+                                          width: 1920,
+                                          height: 1440,
+                                          usage: [.shaderRead, .shaderWrite],
+                                          pixelFormat: .rgba8Unorm)
+        
+        fileManager = FileManagerHelper()
+        CVMetalTextureCacheCreate(nil, nil, metalDevice!, nil, &self.textureCache)
+        
         sceneView.delegate = self
         sceneView.session.delegate = self
+        sceneView.preferredFramesPerSecond = Int(self.fps)
+        
         
         // Prevent the screen from being dimmed after a while.
         UIApplication.shared.isIdleTimerDisabled = true
@@ -106,9 +200,40 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         notificationCenter.addObserver(self, selector: #selector(displayWarningIfInLowPowerMode),
                                        name: Notification.Name.NSProcessInfoPowerStateDidChange, object: nil)
         
+        
         setupNavigationBar()
         
         displayWarningIfInLowPowerMode()
+    
+        
+        self.startMotionCapture()
+        
+        //captureSession.sessionPreset = .hd1920x1080
+        //deviceInput = try? AVCaptureDeviceInput(device: captureDevice!)
+        //captureSession.addInput(deviceInput!)
+        
+        //output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        //output.setSampleBufferDelegate(self, queue: DispatchQueue(label: "queue"))
+        //captureSession.addOutput(output)
+        
+        //assetWriterInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
+        
+        //pixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: assetWriterInput, sourcePixelBufferAttributes: sourcePixelBufferAttributes)
+        
+        //assetWriter = try? AVAssetWriter(url: fileManager.path!, fileType: AVFileType.mp4)
+        
+        //assetWriter?.add(assetWriterInput)
+
+        // we need to warn the input to expect real time data incoming, so that it tries
+        // to avoid being unavailable at inopportune moments
+        //assetWriterInput.expectsMediaDataInRealTime = true
+
+        // eventually
+        //assetWriter?.startWriting()
+        //assetWriter?.startSession(atSourceTime: CMTime.zero)
+        //captureSession.startRunning()
+        
+        self.videoCapture = VideoCapture(codec: .h264, width: 1920, height: 1440, path: fileManager.path!, fps: self.fps)
         
         // Make sure the application launches in .startARSession state.
         // Entering this state will run() the ARSession.
@@ -122,6 +247,53 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         // so it can be retrieved later from outside the main thread.
         screenCenter = sceneView.center
     }
+    
+    
+    // MARK: Start Motion Capture
+    private func startMotionCapture() {
+        self.motion = CMMotionManager()
+        
+        if self.motion.isDeviceMotionAvailable { self.motion!.deviceMotionUpdateInterval = 1.0 / 200.0 // ask for 200Hz but max frequency is 100Hz for 14pro
+            self.motion.showsDeviceMovementDisplay = true
+            // get the attitude relative to the magnetic north reference frame
+            self.motion.startDeviceMotionUpdates(using: .xArbitraryZVertical,
+                                                 to: OperationQueue(), withHandler: { (data, error) in
+                // make sure the data is valid before accessing it
+                if let validData = data {
+                    
+                    let timestamp = validData.timestamp
+                    
+                    let attitude = validData.attitude
+                    let quaternion = validData.attitude.quaternion
+                    let rotationRate = validData.rotationRate
+                    let userAcceleration = validData.userAcceleration
+                    let gravity = validData.gravity
+                    
+                    self.motionData = validData
+                    
+                    
+                    
+//                    // generate header information to parse later in python
+//                    var header = """
+//                    <BEGINHEADER>
+//                    frameCount:\(String(describing: self.frameCount)),timestamp:\(String(describing: timestamp)),
+//                    quaternionX:\(String(describing: quaternion.x)),quaternionY:\(String(describing: quaternion.y)),
+//                    quaternionZ:\(String(describing: quaternion.z)),quaternionW:\(String(describing: quaternion.w)),
+//                    rotationRateX:\(String(describing: rotationRate.x)),rotationRateY:\(String(describing: rotationRate.y)),
+//                    rotationRateZ:\(String(describing: rotationRate.z)),roll:\(String(describing: attitude.roll)),
+//                    pitch:\(String(describing: attitude.pitch)),yaw:\(String(describing: attitude.yaw)),
+//                    userAccelerationX:\(String(describing: userAcceleration.x)),userAccelerationY:\(String(describing: userAcceleration.y)),
+//                    userAccelerationZ:\(String(describing: userAcceleration.z)),gravityX:\(String(describing: gravity.x)),
+//                    gravityY:\(String(describing: gravity.y)),gravityZ:\(String(describing: gravity.z))
+//                    <ENDHEADER>
+//                    """
+//
+//                    print(header)
+                }
+            })
+        }
+    }
+
     
     // MARK: - UI Event Handling
     
@@ -201,19 +373,85 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         }
     }
     
+
+    func shareFiles() {
+        print("Share files....")
+        //arProvider.pause()
+        //self.queue.async {
+        
+        if cameraPoses.count > 0 {
+            boxPose = BoxPose(extent: self.scan!.scannedObject.boundingBox!.extent,
+                              worldPosition: self.scan!.scannedObject.boundingBox!.simdWorldPosition,
+                              worldOrientation: self.scan!.scannedObject.boundingBox!.simdWorldOrientation,
+                              origin: self.scan!.scannedObject.origin!.simdWorldPosition)
+        }
+        let operationQueue = OperationQueue()
+        operationQueue.maxConcurrentOperationCount = 8
+
+        do {
+
+//            let savedFrames = self.savedFrames
+//            var cameraPoses: [CameraPose] = []
+//            for frame in savedFrames {
+//                let sourceImgPath = self.fileManager!.path!.path + "/" + frame.rgbPath
+//                let targetImgPath =  self.fileManager!.path!.path + "/rgb/" + frame.rgbPath.dropLast(4) + ".jpeg"
+//
+//                cameraPoses.append(frame.pose)
+//
+//                operationQueue.addOperation {
+//                    self.fileManager?.convertBinToJpeg(sourceFilePath: sourceImgPath,
+//                                                             targetFilePath: targetImgPath,
+//                                                             width: frame.rgbResolution[1],
+//                                                             height: frame.rgbResolution[0],
+//                                                             orientation: .portrait)
+//                }
+//            }
+
+
+            operationQueue.addOperation {
+                self.fileManager?.writeBoxPose(box: self.boxPose)
+                self.fileManager?.writeCameraPose(cameraPoses: self.cameraPoses, motionData: self.motionDataArr)
+                self.fileManager?.writeFrameInfo(cameraPoses: self.cameraPoses)
+            }
+        } catch {
+            print("error")
+        }
+
+
+        operationQueue.waitUntilAllOperationsAreFinished()
+        
+        
+        //DispatchQueue.main.async {
+        var filesToShare = [Any]()
+        filesToShare.append(self.fileManager!.path)
+        let av = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
+
+        UIApplication.shared.keyWindow?.rootViewController?.present(av, animated: true, completion: nil)
+        //}
+        //}
+    }
+    
+
     @IBAction func loadModelButtonTapped(_ sender: Any) {
         guard !loadModelButton.isHidden && loadModelButton.isEnabled else { return }
         
-        let documentPicker = UIDocumentPickerViewController(documentTypes: ["com.pixar.universal-scene-description-mobile"], in: .import)
-        documentPicker.delegate = self
+        loadModelButton.isEnabled = false
+        nextButton.isEnabled = false
+        shareFiles()
         
-        documentPicker.modalPresentationStyle = .overCurrentContext
-        documentPicker.popoverPresentationController?.sourceView = self.loadModelButton
-        documentPicker.popoverPresentationController?.sourceRect = self.loadModelButton.bounds
+        loadModelButton.isEnabled = true
+        nextButton.isEnabled = true
         
-        DispatchQueue.main.async {
-            self.present(documentPicker, animated: true, completion: nil)
-        }
+//        let documentPicker = UIDocumentPickerViewController(documentTypes: ["com.pixar.universal-scene-description-mobile"], in: .import)
+//        documentPicker.delegate = self
+//
+//        documentPicker.modalPresentationStyle = .overCurrentContext
+//        documentPicker.popoverPresentationController?.sourceView = self.loadModelButton
+//        documentPicker.popoverPresentationController?.sourceRect = self.loadModelButton.bounds
+//
+//        DispatchQueue.main.async {
+//            self.present(documentPicker, animated: true, completion: nil)
+//        }
     }
     
     @IBAction func leftButtonTouchAreaTapped(_ sender: Any) {
@@ -356,9 +594,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
                 let message = "Low tracking quality - it is unlikely that a good reference object can be generated from this scan."
                 let buttonTitle = "Restart Scan"
                 
-                self.showAlert(title: title, message: message, buttonTitle: buttonTitle, showCancel: true) { _ in
-                    self.state = .startARSession
-                }
+//                self.showAlert(title: title, message: message, buttonTitle: buttonTitle, showCancel: true) { _ in
+//                    self.state = .startARSession
+//                }
             }
         }
     }
@@ -393,7 +631,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     // MARK: - ARSessionDelegate
     
     func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
-        
         updateSessionInfoLabel(for: camera.trackingState)
         
         switch camera.trackingState {
@@ -407,6 +644,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
                 break
             case .scanning:
                 if let scan = scan {
+                    
                     switch scan.state {
                     case .ready:
                         state = .notReady
@@ -444,8 +682,69 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         }
     }
     
+    func scheduledTimerWithTimeInterval(){
+        // Scheduling timer to Call the function "updateCounting" with the interval of 1 seconds
+        labelTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            
+            self!.timeOfRun += 1
+            self!.timerLabel.text = "Time: "+String(self!.timeOfRun)+" sec"
+
+        }
+    }
+    
+    func stopTimer() {
+        labelTimer.invalidate()
+    }
+    
+    func updateCounting(){
+        print("counting...")
+    }
+    
+    func capturePose(currentFrame: ARFrame, frameCount: Int64, fps: Int32) -> CameraPose {
+        var camPos = CameraPose()
+        
+        
+        camPos.timeStamp = CMTimeMake(value: frameCount, timescale: fps)
+//        camPos.eulerAngles = currentFrame.camera.eulerAngles
+        camPos.worldQuaternion = sceneView.pointOfView!.simdWorldOrientation
+//        camPos.localQuaternion = sceneView.pointOfView!.simdOrientation
+        camPos.worldPose = currentFrame.camera.transform
+        camPos.intrinsics = currentFrame.camera.intrinsics
+//        camPos.projectionMatrix = currentFrame.camera.projectionMatrix
+//        camPos.worldToCamera = currentFrame.camera.viewMatrix(for: UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? UIInterfaceOrientation.unknown)
+//        camPos.translation = simd_float3(currentFrame.camera.transform.columns.3.x, currentFrame.camera.transform.columns.3.y, currentFrame.camera.transform.columns.3.z)
+        
+        return camPos
+    }
+    
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
         guard let frame = sceneView.session.currentFrame else { return }
+        
+        self.currentARFrame = frame
+        
+        if self.videoCapture.ready {
+            //queue.async {
+            self.videoCapture.appendToVideo(pixelBuffer: frame.capturedImage, frameCount: self.frameCount)
+            self.cameraPoses.append(self.capturePose(currentFrame: frame, frameCount: self.frameCount, fps: self.fps))
+            self.motionDataArr.append(self.motionData)
+            //queue.async {
+            if #available(iOS 14.0, *) {
+                if let depth = frame.sceneDepth?.depthMap {
+                    print("saving depth frame.")
+                    _ = self.fileManager!.writeConfidence(pixelBuffer: frame.sceneDepth!.confidenceMap!, imageIdx: Int(self.frameCount))
+                    _ = self.fileManager!.writeDepth(pixelBuffer: depth, imageIdx: Int(self.frameCount))
+                }
+            } else {
+                // Fallback on earlier versions
+            }
+            //}
+            
+            self.frameCount += 1
+            //}
+        }
+        //print(frame.camera.transform.columns.3)
+        //print(sceneView.pointOfView?.simdWorldPosition)
+        //print(self.scan?.scannedObject.boundingBox?.simdWorldPosition)
         scan?.updateOnEveryFrame(frame)
         testRun?.updateOnEveryFrame()
     }

@@ -8,6 +8,7 @@ Main application delegate.
 import UIKit
 import ARKit
 
+@available(iOS 13.0, *)
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     

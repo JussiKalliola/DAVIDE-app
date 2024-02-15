@@ -8,6 +8,7 @@ Managemenent of session information communication to the user.
 import UIKit
 import ARKit
 
+@available(iOS 13.0, *)
 extension ViewController {
     
     func updateSessionInfoLabel(for trackingState: ARCamera.TrackingState) {

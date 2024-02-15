@@ -8,6 +8,7 @@ A visualization of the edges of a 3D box.
 import Foundation
 import SceneKit
 
+@available(iOS 13.0, *)
 class Wireframe: SCNNode {
     
     private var color = UIColor.appYellow

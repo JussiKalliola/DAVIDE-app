@@ -8,6 +8,7 @@ A custom pan gesture reconizer that fires only when a threshold is passed.
 import UIKit.UIGestureRecognizerSubclass
 import ARKit
 
+@available(iOS 13.0, *)
 class ThresholdPanGestureRecognizer: UIPanGestureRecognizer {
     
     /// The threshold in screen pixels after which this gesture is detected.

@@ -9,6 +9,11 @@ import Foundation
 import ARKit
 import SceneKit
 
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
 class ScannedPointCloud: SCNNode, PointCloud {
     
     private var pointNode = SCNNode()

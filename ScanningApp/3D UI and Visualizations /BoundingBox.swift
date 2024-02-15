@@ -8,6 +8,7 @@ An interactive visualization of a bounding box in 3D space with movement and res
 import Foundation
 import ARKit
 
+@available(iOS 13.0, *)
 class BoundingBox: SCNNode {
     
     static let extentChangedNotification = Notification.Name("BoundingBoxExtentChanged")

@@ -9,6 +9,7 @@ import Foundation
 import ARKit
 
 // This class represents a test run of a scanned object.
+@available(iOS 13.0, *)
 class TestRun {
     
     // The ARReferenceObject to be tested in this run.

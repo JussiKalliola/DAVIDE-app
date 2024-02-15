@@ -8,6 +8,7 @@ Gesture interaction methods for the main view controller.
 import UIKit
 import SceneKit
 
+@available(iOS 13.0, *)
 extension ViewController: UIGestureRecognizerDelegate {
         
     @IBAction func didTap(_ gesture: UITapGestureRecognizer) {

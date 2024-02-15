@@ -11,6 +11,7 @@ import ARKit
 
 // Instances of this class represent the origin of the scanned 3D object - both
 // logically as well as visually (as an SCNNode).
+@available(iOS 13.0, *)
 class ObjectOrigin: SCNNode {
     
     static let movedOutsideBoxNotification = Notification.Name("ObjectOriginMovedOutsideBoundingBox")

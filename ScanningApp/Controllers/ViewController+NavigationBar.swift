@@ -8,6 +8,7 @@ Navigation bar management for the main view controller.
 import Foundation
 import UIKit
 
+@available(iOS 13.0, *)
 extension ViewController {
     
     func setupNavigationBar() {

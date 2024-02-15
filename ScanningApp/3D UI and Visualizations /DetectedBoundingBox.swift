@@ -8,6 +8,7 @@ A simple visualiation of a 3D bounding box, used when testing detection of a sca
 import Foundation
 import ARKit
 
+@available(iOS 13.0, *)
 class DetectedBoundingBox: SCNNode {
     
     init(points: [float3], scale: CGFloat, color: UIColor = .appYellow) {

@@ -9,6 +9,8 @@ import Foundation
 import SceneKit
 import ARKit
 
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
 class ScannedObject: SCNNode {
     
     static let positionChangedNotification = Notification.Name("ScannedObjectPositionChanged")
@@ -179,6 +181,13 @@ class ScannedObject: SCNNode {
         origin.simdPosition.y = -boundingBox.extent.y / 2
     }
     
+    func moveOriginToMiddleOfBoundingBox() {
+        // Only move the origin to the bottom of the bounding box if it hasn't been
+        // repositioned by the user yet.
+        guard let boundingBox = boundingBox, let origin = self.origin, !origin.positionHasBeenAdjustedByUser else { return }
+        origin.simdPosition.y = -boundingBox.extent.y / 2
+    }
+    
     func updatePosition(_ worldPos: float3) {
         let offset = worldPos - self.simdWorldPosition
         self.simdWorldPosition = worldPos
@@ -233,7 +242,8 @@ class ScannedObject: SCNNode {
         case .scanning:
             break
         case .adjustingOrigin:
-            moveOriginToBottomOfBoundingBox()
+            print("asd")
+            //moveOriginToBottomOfBoundingBox()
         }
     }
     

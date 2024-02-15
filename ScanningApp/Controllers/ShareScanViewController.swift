@@ -7,6 +7,7 @@ Customized share sheet for exporting scanned AR reference objects.
 
 import UIKit
 
+@available(iOS 13.0, *)
 class ShareScanViewController: UIActivityViewController {
     
     init(sourceView: UIView, sharedObject: Any) {

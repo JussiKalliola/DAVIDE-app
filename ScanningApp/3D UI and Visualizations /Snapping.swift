@@ -7,6 +7,7 @@ Extensions to BoundingBox and ObjectOrigin for snapping to significant locations
 
 import ARKit
 
+@available(iOS 13.0, *)
 extension BoundingBox {
     
     func snapToHorizontalPlane() {
@@ -38,6 +39,7 @@ extension BoundingBox {
     }
 }
 
+@available(iOS 13.0, *)
 extension ObjectOrigin {
     
     func snapToBoundingBoxSide() {

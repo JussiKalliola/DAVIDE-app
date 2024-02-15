@@ -9,6 +9,8 @@ import Foundation
 import ARKit
 import SceneKit
 
+@available(iOS 13.0, *)
+@available(iOS 13.0, *)
 class DetectedObject: SCNNode {
     
     var displayDuration: TimeInterval = 1.0 // How long this visualization is displayed in seconds after an update
