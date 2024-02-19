@@ -20,6 +20,9 @@ class VideoCapture {
     
     var fps: Int32 = 60
     
+    var frameCount: Int64 = 0
+    var frameTime: CMTime = CMTime.zero
+    
     var ready: Bool = false
     
     
@@ -62,10 +65,15 @@ class VideoCapture {
     
     public func stop() {
         self.ready=false
+    }
+    
+    public func finish() {
+        self.ready=false
         self.assetWriterInput.markAsFinished()
         self.assetwriter.finishWriting {
             print("Finished video location: \(self.outputVideoPath.path)")
         }
+        
     }
     
     public func appendToVideo(pixelBuffer: CVPixelBuffer, frameCount: Int64) {
@@ -73,7 +81,9 @@ class VideoCapture {
             let frameTime = CMTimeMake(value: frameCount, timescale: self.fps)
             
             assetWriterAdaptor.append(pixelBuffer, withPresentationTime: frameTime)
-            print("appended pixelbuffer at frame \(frameCount)")
+            self.frameCount = frameCount
+            self.frameTime = frameTime
+            print("appended pixelbuffer at frame \(frameCount) at time \(frameTime)")
         } else {
             print("assetWriterInput is not ready for more media data now...")
         }

@@ -29,7 +29,7 @@ public class ARFrameGenerator {
         }
     }
     
-    public let queue = DispatchQueue(label: "ru.frgroup.volk.ARFrameGenerator", attributes: .concurrent)
+    public let queue = DispatchQueue(label: "ARFrameGenerator", attributes: .concurrent)
     
     public func getFrame(from view: ARSCNView, renderer: SCNRenderer!, time: CFTimeInterval) -> ARCaptureFrame? {
         guard let currentFrame = view.session.currentFrame else { return nil }

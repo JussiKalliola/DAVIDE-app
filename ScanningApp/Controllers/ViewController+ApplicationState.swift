@@ -43,7 +43,7 @@ extension ViewController {
         case startARSession
         case notReady
         case scanning
-        case testing
+        case saving
     }
     
     /// - Tag: ARObjectScanningConfiguration
@@ -65,6 +65,7 @@ extension ViewController {
                     case .normal:
                         newState = .scanning
                     default:
+                        print("Camera tracking state is not normal.")
                         break
                     }
                 } else {
@@ -82,11 +83,8 @@ extension ViewController {
                 } else {
                     newState = .startARSession
                 }
-            case .testing:
-                guard scan?.boundingBoxExists == true || referenceObjectToTest != nil else {
-                    print("Error: Scan is not ready to be tested.")
-                    return
-                }
+            case .saving:
+                break
             }
             
             // 2. Apply changes as needed per state.
@@ -95,13 +93,15 @@ extension ViewController {
             switch newState {
             case .startARSession:
                 print("State: Starting ARSession")
-                scan = nil
-                testRun = nil
-                modelURL = nil
+                if(self.videoCapture.ready) {
+                    self.videoCapture.stop()
+                }
+                self.navBarBackground.isHidden = true
+                self.navigationBar.isHidden=true
                 self.setNavigationBarTitle("")
                 instructionsVisible = false
                 showBackButton(false)
-                nextButton.isEnabled = false
+                nextButton.isEnabled = true
                 loadModelButton.isHidden = true
                 flashlightButton.isHidden = true
                 
@@ -117,42 +117,41 @@ extension ViewController {
                     // Fallback on earlier versions
                 }
                 sceneView.session.run(configuration, options: .resetTracking)
-                cancelMaxScanTimeTimer()
                 cancelMessageExpirationTimer()
             case .notReady:
                 print("State: Not ready to scan")
-                scan = nil
-                testRun = nil
+                if(self.videoCapture.ready) {
+                    self.videoCapture.stop()
+                }
                 self.setNavigationBarTitle("")
+                self.navBarBackground.isHidden = false
+                self.navigationBar.isHidden=false
                 loadModelButton.isHidden = true
                 flashlightButton.isHidden = true
                 showBackButton(false)
                 nextButton.isEnabled = false
-                nextButton.setTitle("Next", for: [])
+                nextButton.setTitle("Start", for: [])
                 displayInstruction(Message("Please wait for stable tracking"))
-                cancelMaxScanTimeTimer()
             case .scanning:
+                if(!self.videoCapture.ready) {
+                    self.videoCapture.start()
+                }
+                self.statsLabel.isHidden=false
+                self.nextButton.setTitle("Stop", for: [])
+                
                 print("State: Scanning")
-                if scan == nil {
-                    self.scan = Scan(sceneView)
-                    self.scan?.state = .ready
+            case .saving:
+                if(self.videoCapture.ready) {
+                    self.videoCapture.stop()
                 }
                 
-                testRun = nil
+                self.navBarBackground.isHidden = false
+                self.navigationBar.isHidden=false
                 
-                startMaxScanTimeTimer()
-            case .testing:
-                print("State: Testing")
-                self.setNavigationBarTitle("Test")
-                loadModelButton.isHidden = true
-                flashlightButton.isHidden = false
-                showMergeScanButton()
-                nextButton.isEnabled = true
-                nextButton.setTitle("Share", for: [])
-                
-                testRun = TestRun(sceneView: sceneView)
-                testObjectDetection()
-                cancelMaxScanTimeTimer()
+                self.nextButton.isHidden = false
+                nextButton.setTitle("Continue", for: [])
+                loadModelButton.isHidden = false
+                self.loadModelButton.setTitle("Save", for: [])
             }
             
             NotificationCenter.default.post(name: ViewController.appStateChangedNotification,
@@ -266,10 +265,6 @@ extension ViewController {
                                         rgbPath: rgbPath!,
                                         rgbResolution: [RGBTexture.height,
                                                         RGBTexture.width])
-        print(self.scan!.scannedObject.boundingBox?.extent)
-        print(self.scan!.scannedObject.boundingBox?.simdWorldPosition)
-        print(self.scan!.scannedObject.boundingBox?.simdWorldOrientation)
-        print(self.scan?.scannedObject.origin?.simdWorldPosition)
 //
         self.savedFrames.append(savedFrameData)
 //
@@ -282,102 +277,7 @@ extension ViewController {
         self.fileCounter += 1
     }
     
-//    func startTimer() {
-//        self.timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true, block: { _ in
-//            print("Timer...")
-//            self.captureFrameData()
-//
-//        })
-//    }
-//    
-//    func stopTimer() {
-//        //arReceiver.scanState = scanState
-//        print("stop timer....")
-//        self.timer.invalidate()
-//    }
-    
-    @objc
-    func scanningStateChanged(_ notification: Notification) {
-        guard self.state == .scanning, let scan = notification.object as? Scan, scan === self.scan else { return }
-        guard let scanState = notification.userInfo?[Scan.stateUserInfoKey] as? Scan.State else { return }
         
-        DispatchQueue.main.async {
-            switch scanState {
-            case .ready:
-                print("Scanning state changed: ready")
-                //self.stopTimer()
-                print("State: Ready to scan")
-                self.setNavigationBarTitle("Ready to scan")
-                self.showBackButton(false)
-                self.nextButton.setTitle("Next", for: [])
-                self.loadModelButton.isHidden = true
-                self.flashlightButton.isHidden = true
-                if scan.ghostBoundingBoxExists {
-                    self.displayInstruction(Message("Tap 'Next' to create an approximate bounding box around the object you want to scan."))
-                    self.nextButton.isEnabled = true
-                } else {
-                    self.displayInstruction(Message("Point at a nearby object to scan."))
-                    self.nextButton.isEnabled = false
-                }
-            case .defineBoundingBox:
-                print("Scanning state changed: defineBoundingBox")
-                //self.stopTimer()
-                print("State: Define bounding box")
-                self.displayInstruction(Message("Position and resize bounding box using gestures.\n" +
-                    "Long press sides to push/pull them in or out. "))
-                self.setNavigationBarTitle("Define bounding box")
-                self.showBackButton(true)
-                self.nextButton.isEnabled = scan.boundingBoxExists
-                self.loadModelButton.isHidden = true
-                self.flashlightButton.isHidden = true
-                self.nextButton.setTitle("Scan", for: [])
-            case .scanning:
-                print("Scanning state changed: Scanning")
-                print("start scanning timer.")
-                self.scheduledTimerWithTimeInterval()
-                self.videoCapture.start()
-                //self.startTimer()
-                //self.capture = ARCapture(view: self.sceneView)
-                //self.capture?.start(captureType: .imageCapture)
-                self.displayInstruction(Message("Scan the object from all sides that you are " +
-                    "interested in. Do not move the object while scanning!"))
-                if let boundingBox = scan.scannedObject.boundingBox {
-                    self.setNavigationBarTitle("Scan (\(boundingBox.progressPercentage)%)")
-                } else {
-                    self.setNavigationBarTitle("Scan 0%")
-
-                }
-                                
-                self.showBackButton(true)
-                self.nextButton.isEnabled = true
-                self.loadModelButton.isHidden = true
-                self.flashlightButton.isHidden = true
-                self.nextButton.setTitle("Finish", for: [])
-                // Disable plane detection (even if no plane has been found yet at this time) for performance reasons.
-                self.sceneView.stopPlaneDetection()
-            case .adjustingOrigin:
-                print("Scanning state changed: adjustingOrigin")
-                self.stopTimer()
-                self.videoCapture.stop()
-                //self.capture?.stop({ (status) in
-                //    print("Video exported: \(status)")
-                //})
-                //self.stopTimer()
-                print("State: Adjusting Origin")
-                self.displayInstruction(Message("Adjust origin using gestures.\n" +
-                                                "Save data after adjusting origin."))
-                    //"You can load a *.usdz 3D model overlay."))
-                self.setNavigationBarTitle("Adjust origin")
-                self.showBackButton(true)
-                self.nextButton.isEnabled = true
-                self.loadModelButton.isHidden = false
-                self.loadModelButton.setTitle("Save", for: [])
-                self.flashlightButton.isHidden = true
-                self.nextButton.setTitle("Test", for: [])
-            }
-        }
-    }
-    
     func switchToPreviousState() {
         switch state {
         case .startARSession:
@@ -385,21 +285,10 @@ extension ViewController {
         case .notReady:
             state = .startARSession
         case .scanning:
-            if let scan = scan {
-                switch scan.state {
-                case .ready:
-                    restartButtonTapped(self)
-                case .defineBoundingBox:
-                    scan.state = .ready
-                case .scanning:
-                    scan.state = .defineBoundingBox
-                case .adjustingOrigin:
-                    scan.state = .scanning
-                }
-            }
-        case .testing:
-            state = .scanning
-            scan?.state = .adjustingOrigin
+            print("scanning")
+        case .saving:
+            print("Saving: Restart session.")
+            state = .startARSession
         }
     }
     
@@ -410,52 +299,14 @@ extension ViewController {
         case .notReady:
             state = .scanning
         case .scanning:
-            if let scan = scan {
-                switch scan.state {
-                case .ready:
-                    scan.state = .defineBoundingBox
-                case .defineBoundingBox:
-                    scan.state = .scanning
-                case .scanning:
-                    scan.state = .adjustingOrigin
-                case .adjustingOrigin:
-                    state = .testing
-                }
-            }
-        case .testing:
-            // Testing is the last state, show the share sheet at the end.
-            createAndShareReferenceObject()
+            state = .saving
+            print("scanning")
+        case .saving:
+            state = .scanning
+            print("saving")
         }
     }
-    
-    @objc
-    func ghostBoundingBoxWasCreated(_ notification: Notification) {
-        if let scan = scan, scan.state == .ready {
-            DispatchQueue.main.async {
-                self.nextButton.isEnabled = true
-                self.displayInstruction(Message("Tap 'Next' to create an approximate bounding box around the object you want to scan."))
-            }
-        }
-    }
-    
-    @objc
-    func ghostBoundingBoxWasRemoved(_ notification: Notification) {
-        if let scan = scan, scan.state == .ready {
-            DispatchQueue.main.async {
-                self.nextButton.isEnabled = false
-                self.displayInstruction(Message("Point at a nearby object to scan."))
-            }
-        }
-    }
-    
-    @objc
-    func boundingBoxWasCreated(_ notification: Notification) {
-        if let scan = scan, scan.state == .defineBoundingBox {
-            DispatchQueue.main.async {
-                self.nextButton.isEnabled = true
-            }
-        }
-    }
+
 }
 
 @available(iOS 13.0, *)
