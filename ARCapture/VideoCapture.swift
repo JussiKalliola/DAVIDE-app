@@ -1,6 +1,6 @@
 //
 //  VideoCapture.swift
-//  ScanningApp
+//  DAVIDEApp
 //
 //  Created by Jussi Kalliola (TAU) on 30.1.2023.
 //  Copyright © 2023 Apple. All rights reserved.

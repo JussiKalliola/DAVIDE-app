@@ -1,6 +1,6 @@
 //
 //  structures.swift
-//  ScanningApp
+//  DAVIDEApp
 //
 //  Created by Jussi Kalliola (TAU) on 9.1.2023.
 //  Copyright © 2023 Apple. All rights reserved.

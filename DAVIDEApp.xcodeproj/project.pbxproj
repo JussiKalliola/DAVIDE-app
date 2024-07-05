@@ -35,15 +35,14 @@
 
 /* Begin PBXFileReference section */
 		1119C68220AA135700DDFCC2 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		12C2838012C28A9000000001 /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		12CBEA4012CBE8C000000001 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
-		395C9944200707A30025413C /* ScanningApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanningApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		395C9944200707A30025413C /* DAVIDEApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DAVIDEApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		395C9947200707A30025413C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		395C994B200707A30025413C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		395C994E200707A30025413C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		395C9950200707A40025413C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ScanningApp/Assets.xcassets; sourceTree = "<group>"; };
+		395C9950200707A40025413C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = DAVIDEApp/Assets.xcassets; sourceTree = "<group>"; };
 		395C9953200707A40025413C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		395C9955200707A40025413C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ScanningApp/Info.plist; sourceTree = "<group>"; };
+		395C9955200707A40025413C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = DAVIDEApp/Info.plist; sourceTree = "<group>"; };
 		39D6E983207B1D05002CF536 /* ViewController+ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+ApplicationState.swift"; sourceTree = "<group>"; };
 		39E6F859200EE27800B278CA /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		BC061E892987BCB30092CC66 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
@@ -54,7 +53,7 @@
 		BCE83B51297D1B070003021A /* ARCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCapture.swift; sourceTree = "<group>"; };
 		BCE83B53297D1B290003021A /* ARAssetWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAssetWriter.swift; sourceTree = "<group>"; };
 		BCE83B55297D1B470003021A /* ARFrameGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFrameGenerator.swift; sourceTree = "<group>"; };
-		C4543843207F38460016097A /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; name = art.scnassets; path = ScanningApp/art.scnassets; sourceTree = "<group>"; };
+		C4543843207F38460016097A /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; name = art.scnassets; path = DAVIDEApp/art.scnassets; sourceTree = "<group>"; };
 		C45BF9C9208E11420070CB19 /* ViewController+NavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ViewController+NavigationBar.swift"; sourceTree = "<group>"; };
 		C46B56362016079A001C41CE /* ShareScanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareScanViewController.swift; sourceTree = "<group>"; };
 		C46B563A20173523001C41CE /* ARCameraTrackingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ARCameraTrackingState.swift; sourceTree = "<group>"; };
@@ -82,15 +81,7 @@
 				39E6F859200EE27800B278CA /* Utilities.swift */,
 			);
 			name = "Utility Extensions";
-			path = "ScanningApp/Utility Extensions";
-			sourceTree = "<group>";
-		};
-		12C2354012C22E8000000001 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				12C2838012C28A9000000001 /* SampleCode.xcconfig */,
-			);
-			name = Configuration;
+			path = "DAVIDEApp/Utility Extensions";
 			sourceTree = "<group>";
 		};
 		12CBD22012CD27F000000001 /* LICENSE */ = {
@@ -119,7 +110,6 @@
 				395C9955200707A40025413C /* Info.plist */,
 				395C9945200707A30025413C /* Products */,
 				C4F50182203489740099B4BD /* Frameworks */,
-				12C2354012C22E8000000001 /* Configuration */,
 				12CBD22012CD27F000000001 /* LICENSE */,
 			);
 			sourceTree = "<group>";
@@ -127,7 +117,7 @@
 		395C9945200707A30025413C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				395C9944200707A30025413C /* ScanningApp.app */,
+				395C9944200707A30025413C /* DAVIDEApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -154,7 +144,7 @@
 				C46B56362016079A001C41CE /* ShareScanViewController.swift */,
 			);
 			name = Controllers;
-			path = ScanningApp/Controllers;
+			path = DAVIDEApp/Controllers;
 			sourceTree = "<group>";
 		};
 		C479BF31201F84EB0030C57A /* Views */ = {
@@ -165,7 +155,7 @@
 				C4B16A0720AF2DEE00BE6B5B /* FlashlightButton.swift */,
 			);
 			name = Views;
-			path = ScanningApp/Views;
+			path = DAVIDEApp/Views;
 			sourceTree = "<group>";
 		};
 		C479BF32201F84FB0030C57A /* Storyboards */ = {
@@ -175,7 +165,7 @@
 				395C9952200707A40025413C /* LaunchScreen.storyboard */,
 			);
 			name = Storyboards;
-			path = ScanningApp/Storyboards;
+			path = DAVIDEApp/Storyboards;
 			sourceTree = "<group>";
 		};
 		C4F50182203489740099B4BD /* Frameworks */ = {
@@ -188,9 +178,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		395C9943200707A30025413C /* ScanningApp */ = {
+		395C9943200707A30025413C /* DAVIDEApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 395C9958200707A40025413C /* Build configuration list for PBXNativeTarget "ScanningApp" */;
+			buildConfigurationList = 395C9958200707A40025413C /* Build configuration list for PBXNativeTarget "DAVIDEApp" */;
 			buildPhases = (
 				395C9940200707A30025413C /* Sources */,
 				395C9941200707A30025413C /* Frameworks */,
@@ -200,9 +190,9 @@
 			);
 			dependencies = (
 			);
-			name = ScanningApp;
+			name = DAVIDEApp;
 			productName = ScanningApp;
-			productReference = 395C9944200707A30025413C /* ScanningApp.app */;
+			productReference = 395C9944200707A30025413C /* DAVIDEApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -221,7 +211,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 395C993F200707A30025413C /* Build configuration list for PBXProject "ScanningApp" */;
+			buildConfigurationList = 395C993F200707A30025413C /* Build configuration list for PBXProject "DAVIDEApp" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -234,7 +224,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				395C9943200707A30025413C /* ScanningApp */,
+				395C9943200707A30025413C /* DAVIDEApp */,
 			);
 		};
 /* End PBXProject section */
@@ -305,7 +295,6 @@
 /* Begin XCBuildConfiguration section */
 		395C9956200707A40025413C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 12C2838012C28A9000000001 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -366,7 +355,6 @@
 		};
 		395C9957200707A40025413C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 12C2838012C28A9000000001 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -420,17 +408,16 @@
 		};
 		395C9959200707A40025413C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 12C2838012C28A9000000001 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 7CUN75DRBD;
-				INFOPLIST_FILE = ScanningApp/Info.plist;
+				INFOPLIST_FILE = DAVIDEApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ARKitScanner30";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuni.cv.DAVIDEApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
@@ -440,16 +427,15 @@
 		};
 		395C995A200707A40025413C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 12C2838012C28A9000000001 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7CUN75DRBD;
-				INFOPLIST_FILE = ScanningApp/Info.plist;
+				INFOPLIST_FILE = DAVIDEApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ARKitScanner30";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuni.cv.DAVIDEApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
@@ -460,7 +446,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		395C993F200707A30025413C /* Build configuration list for PBXProject "ScanningApp" */ = {
+		395C993F200707A30025413C /* Build configuration list for PBXProject "DAVIDEApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				395C9956200707A40025413C /* Debug */,
@@ -469,7 +455,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		395C9958200707A40025413C /* Build configuration list for PBXNativeTarget "ScanningApp" */ = {
+		395C9958200707A40025413C /* Build configuration list for PBXNativeTarget "DAVIDEApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				395C9959200707A40025413C /* Debug */,
