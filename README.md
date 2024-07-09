@@ -1,4 +1,4 @@
-# DAVIDE-app
+# DAVIDE App
 
 This is the official code repository for the iOS application developed for **ARTICLE**: [LINK TO ARTICLE](https://google.com)
 
@@ -20,18 +20,45 @@ bibtex
 6. Run the application (Provide access to camera and location for the app).
 
 ## Using the App
-App can be used to perform Safe Landing Area Determination online whereas the safe landing area is visualized as an AR element in the physical space, or data collection app for offline determination (or for other purposes).
+Short description of the app. e.g., "App is used to capture RGB, depth, confidence images, camera pose (using ARKit), and IMU sensory data."
 
-![app](Documentation/system2.png)
+![app](Documentation/system.png)
 
-1. **Open the application.** First time opening the app, accept request to use camera, location, and storage. The app opens into camera view with few UI elements; bottom task bar for scanning and modifying the camera view, button in the top left corner for settings, and some statistics about the scan shown on top of taskbar. 
-2. **Adjust the settings.** Click the icon in the top left corner to open the settings window, and adjust parameters depending on the usecase. It is possible to tune parameters in the following areas: rendering, global point cloud, point cloud filtering, safe landing area determination, terrain complexity evaluation, and ROS. More detailed description of parameters and their usage can be found below from the *Notes* section.
-3. **Start scanning.** Press *Scan* button to start. *Long press* anywhere on the camera view will capture a frame and the frame is visualized in the camera view as AR element. More detailed description can be found from the [thesis](https://trepo.tuni.fi/handle/10024/148220). Clicking *Point cloud* button will change the visualization to Mesh view. To visualize point cloud/mesh without camera feed, press *Off* button.
-4. **Process point cloud.** Press *Stop* button when finished with scanning and move on to point cloud processing or saving the data (skip to the nextstep). Point cloud processing is performed in sequence; [voxel grid filtering](https://pointclouds.org/documentation/tutorials/voxel_grid.html), [region clustering](https://pcl.readthedocs.io/projects/tutorials/en/latest/region_growing_segmentation.html), and finally [Safe landing area determination](https://ieeexplore.ieee.org/document/9189499). Processing may take a long time depending on the size of the point cloud, especially the point cloud classification. 
-6. **Save the data.** When done, press *Save* button to save the data. It might take a minute to process and pack all the data. Save the data to iCloud, locally on iPhone, or send to your other device using AirDrop.
+1. **Open the application.** First time opening the app, accept request to use camera, location, and storage. The app opens into camera view with **Start** button as UI element. Press **Start** to begin scanning. 
+2. **Start scanning.** App starts the scanning immidiately after pressing the **Start** button. Scanning statistics can be seen on the bottom right side of the view; Duration (sec), captured frames, and position of the camera (determined by ARKit, check *notes*). Scanning can be stopped by pressing **Stop** button.
+3. **Stop scanning.** After stopping the scan, it is possible to resume scanning by pressing **Continue**, start over by pressing **Restart**, or save the collected data by pressing **Save**.  
+4. **Save the data.** When done, press **Save** button to save the data. It might take a minute to process and pack all the data. Save the data to iCloud, locally on iPhone, or send to your other device using AirDrop.
 
-**Notes:** PCL implementation of [KDTree](https://pointclouds.org/documentation/tutorials/kdtree_search.html), [Voxel grid filtering](https://pointclouds.org/documentation/tutorials/voxel_grid.html), [Region clustering](https://pcl.readthedocs.io/projects/tutorials/en/latest/region_growing_segmentation.html), [Normal estimation](https://pointclouds.org/documentation/tutorials/normal_estimation.html), and [Plane fitting](https://pointclouds.org/documentation/tutorials/planar_segmentation.html) are used. Safe landing area determination algorithm used is proposed by [Yan et al.](https://ieeexplore.ieee.org/document/9189499) which is modified to be more suitable for irregular and noisy point clouds. More about the modifications can be found from the [thesis](https://trepo.tuni.fi/handle/10024/148220).
+**Notes:** iPhone pose estimation is provided by [Apple ARKit API](https://developer.apple.com/augmented-reality/arkit/), and uses visual-inertial odometry which combines data from motion sensors with computer vision analysis of the scene. ARKit tracks differences in the positions of notable features in the scene and compares that information with motion sensing data. More about the world tracking can be found from [Apple documentation](https://developer.apple.com/documentation/arkit/arkit_in_ios/configuration_objects/understanding_world_tracking).
 
 ## Recorded Data
- App collects RGB frames, depth- and confidence maps, camera poses, pointcloud computed from depth images (raw), filtered, 3D mesh(from ARKit) processed, classified point cloud, and app parameters. After collecting data, press `Save` and save the data to iCloud, locally, or AirDrop to your other device.
+ App captures RGB, depth, and confidence frames, camera intrinsics, poses (ARKit), and motion sensor data provided by IMU (gyroscope and accelerometer). Depth and confidence frames are saved as individual binary files, but RGB frames are stored as video file (.mov). Frame metadata and poses are saved as text file. Data is captured in 60 hertz. Apple ARKit and CoreMotion APIs are used to read the sensory readings. Orientation in ARKit is [Gravity](https://developer.apple.com/documentation/arkit/arconfiguration/worldalignment/gravity) and in CoreMotion Orientation [xArbitraryZVertical](https://developer.apple.com/documentation/coremotion/cmattitudereferenceframe/1615953-xarbitraryzvertical).
 
+Description of ARPoses.txt
+```
+# timestamp, ARKit Camera translation(x,y,z), ARKit Camera orientation in Quaternion(w,x,y,z), Attitude Quaternion(w,x,y,z), Attitude Euler(roll,pitch,yaw), Rotation Rate(x,y,z), Acceleration(x,y,z), Gravity(x,y,z)
+```
+
+Description of Frames.txt
+```
+# timestamp, Frame index, Camera intrinsics(fx, fy, cx, cy)
+```
+
+ | Name | iOS type | More |
+|------|----------|------------|
+| RGB | [Metal MTLTexture RGBA 8bit](https://developer.apple.com/documentation/metal/mtltexture) | Resolution 1920x1440. Converted to video file (.mov), using codec .h264 |
+| Depth | [Metal MTLTexture Float](https://developer.apple.com/documentation/metal/mtltexture) | Resolution 256x192 |
+| Confidence | [Metal MTLTexture 8bit](https://developer.apple.com/documentation/metal/mtltexture) | Resolution 256x192 |
+| Camera intrinsics | [ARCamera Intrinsics](https://developer.apple.com/documentation/arkit/arcamera/2875730-intrinsics) | The intrinsic matrix (commonly represented in equations as K) is based on physical characteristics of the device camera and a pinhole camera model. |
+| Pose (ARKit) | [ARCamera Transform](https://developer.apple.com/documentation/arkit/arcamera/2866108-transform) | y-axis is parallel to gravity, and its origin is the initial position of the device. |
+| SceneKit Quaternion | [SceneKit pointOfView](https://developer.apple.com/documentation/scenekit/scnscenerenderer/1523982-pointofview) | y-axis is parallel to gravity, and its origin is the initial position of the device.  |
+| Attitude | [Core Motion Attitude](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616050-attitude) | Attitude of the device (quaternion & euler angles) |
+| Rotation Rate | [Core Motion rotationRate](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1615967-rotationrate) | Rotation rate of the device (x,y,z) |
+| Accelerometer | [Core Motion Acceleration](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616149-useracceleration) | The acceleration that the user is giving to the device (x, y, z) |
+| Gravity | [Core Motion Gravity](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity) | The gravity acceleration vector expressed in the device's reference frame. (x, y, z)  |
+
+## Acknowledgements
+
+Parts of this repo is inspired by the following repositories and sample codes:
+- [Scanning and detecting 3D objects (Apple Sample Code)](https://developer.apple.com/documentation/arkit/arkit_in_ios/content_anchors/scanning_and_detecting_3d_objects)
+- [HNDR](https://github.com/princeton-computational-imaging/HNDR)

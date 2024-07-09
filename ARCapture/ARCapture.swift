@@ -39,7 +39,7 @@ open class ARCapture {
         case unknown, enabled, disabled
     }
     
-    private let queue = DispatchQueue(label: "ru.frgroup.volk.ARCapture")
+    private let queue = DispatchQueue(label: "ARCapture")
     
     /// the delegate
     weak public var delegate: ARCaptureDelegate?
