@@ -127,7 +127,8 @@
 				BCE83B55297D1B470003021A /* ARFrameGenerator.swift */,
 				BC061E892987BCB30092CC66 /* VideoCapture.swift */,
 			);
-			path = ARCapture;
+			name = ARCapture;
+			path = DAVIDEApp/ARCapture;
 			sourceTree = "<group>";
 		};
 		C479BF30201F84D70030C57A /* Controllers */ = {
