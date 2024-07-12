@@ -29,7 +29,6 @@
 		C46B563B20173523001C41CE /* ARCameraTrackingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46B563A20173523001C41CE /* ARCameraTrackingState.swift */; };
 		C46B563D20173795001C41CE /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46B563C20173795001C41CE /* MessageLabel.swift */; };
 		C47D1E1720B3763C00DC3FDE /* ViewController+SessionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47D1E1620B3763C00DC3FDE /* ViewController+SessionInfo.swift */; };
-		C4B16A0820AF2DEE00BE6B5B /* FlashlightButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B16A0720AF2DEE00BE6B5B /* FlashlightButton.swift */; };
 		C4CE2699203AF7A1007B12A5 /* RoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE2690203AF7A1007B12A5 /* RoundedButton.swift */; };
 /* End PBXBuildFile section */
 
@@ -59,7 +58,6 @@
 		C46B563A20173523001C41CE /* ARCameraTrackingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ARCameraTrackingState.swift; sourceTree = "<group>"; };
 		C46B563C20173795001C41CE /* MessageLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
 		C47D1E1620B3763C00DC3FDE /* ViewController+SessionInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ViewController+SessionInfo.swift"; sourceTree = "<group>"; };
-		C4B16A0720AF2DEE00BE6B5B /* FlashlightButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlashlightButton.swift; sourceTree = "<group>"; };
 		C4CE2690203AF7A1007B12A5 /* RoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundedButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +75,8 @@
 		11D4F6C320A19AF200892189 /* Utility Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				BC1DF603296C43DF00C21E51 /* EnvironmentVariables.swift */,
+				BC1DF601296C41CC00C21E51 /* Structures.swift */,
 				C46B563A20173523001C41CE /* ARCameraTrackingState.swift */,
 				39E6F859200EE27800B278CA /* Utilities.swift */,
 			);
@@ -95,10 +95,6 @@
 		395C993B200707A30025413C = {
 			isa = PBXGroup;
 			children = (
-				BC1DF607296C4BAB00C21E51 /* shaders.metal */,
-				BC1DF605296C499F00C21E51 /* FileManagerHelper.swift */,
-				BC1DF603296C43DF00C21E51 /* EnvironmentVariables.swift */,
-				BC1DF601296C41CC00C21E51 /* Structures.swift */,
 				1119C68220AA135700DDFCC2 /* README.md */,
 				BCE83B50297D1AC90003021A /* ARCapture */,
 				C479BF30201F84D70030C57A /* Controllers */,
@@ -125,6 +121,7 @@
 		BCE83B50297D1AC90003021A /* ARCapture */ = {
 			isa = PBXGroup;
 			children = (
+				BC1DF607296C4BAB00C21E51 /* shaders.metal */,
 				BCE83B51297D1B070003021A /* ARCapture.swift */,
 				BCE83B53297D1B290003021A /* ARAssetWriter.swift */,
 				BCE83B55297D1B470003021A /* ARFrameGenerator.swift */,
@@ -136,6 +133,7 @@
 		C479BF30201F84D70030C57A /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				BC1DF605296C499F00C21E51 /* FileManagerHelper.swift */,
 				395C9947200707A30025413C /* AppDelegate.swift */,
 				395C994B200707A30025413C /* ViewController.swift */,
 				39D6E983207B1D05002CF536 /* ViewController+ApplicationState.swift */,
@@ -152,7 +150,6 @@
 			children = (
 				C46B563C20173795001C41CE /* MessageLabel.swift */,
 				C4CE2690203AF7A1007B12A5 /* RoundedButton.swift */,
-				C4B16A0720AF2DEE00BE6B5B /* FlashlightButton.swift */,
 			);
 			name = Views;
 			path = DAVIDEApp/Views;
@@ -253,7 +250,6 @@
 				39E6F85A200EE27800B278CA /* Utilities.swift in Sources */,
 				BCE83B56297D1B470003021A /* ARFrameGenerator.swift in Sources */,
 				C45BF9CA208E11420070CB19 /* ViewController+NavigationBar.swift in Sources */,
-				C4B16A0820AF2DEE00BE6B5B /* FlashlightButton.swift in Sources */,
 				C47D1E1720B3763C00DC3FDE /* ViewController+SessionInfo.swift in Sources */,
 				BC1DF604296C43DF00C21E51 /* EnvironmentVariables.swift in Sources */,
 				BC061E8A2987BCB30092CC66 /* VideoCapture.swift in Sources */,
@@ -410,6 +406,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -429,6 +426,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7CUN75DRBD;

@@ -1,8 +1,9 @@
 //
 //  ARFrameGenerator.swift
-//  ARCapture framework
+//  DAVIDEApp
 //
 //  Created by Volkov Alexander on 6/6/21.
+//  Modified by Jussi Kalliola (TAU) on 9.1.2023.
 //
 
 import Foundation
@@ -37,8 +38,7 @@ public class ARFrameGenerator {
         
         /// the image used for the video frame
         var frame: UIImage?
-        //        var width = CVPixelBufferGetWidth(capturedImage)
-        //        var height = CVPixelBufferGetHeight(capturedImage)
+
         var width = captureType == .imageCapture ? view.bounds.width : view.currentViewport.width
         var height = captureType == .imageCapture ? view.bounds.height : view.currentViewport.height
         let originalSize = CGSize(width: width, height: height)
@@ -81,9 +81,7 @@ public class ARFrameGenerator {
             }
             
             queue.sync {
-                //renderer.scene?.background
                 frame = renderer.snapshot(atTime: time, with: size, antialiasingMode: .none)
-                //print("size: \(size) frame.size=\(frame?.size)")
             }
         }
         return (capturedImage, frame?.getBuffer(angle: angle, originalSize: originalSize), originalSize)

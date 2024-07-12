@@ -1,8 +1,10 @@
 /*
 See LICENSE folder for this sample’s licensing information.
 
+Modified by Jussi Kalliola (TAU) on 9.1.2023.
+
 Abstract:
-Management of the UI steps for scanning an object in the main view controller.
+Management of the UI steps for scanning in the main view controller.
 */
 
 import Foundation
@@ -103,7 +105,6 @@ extension ViewController {
                 showBackButton(false)
                 nextButton.isEnabled = true
                 loadModelButton.isHidden = true
-                flashlightButton.isHidden = true
                 
                 // Make sure the SCNScene is cleared of any SCNNodes from previous scans.
                 sceneView.scene = SCNScene()
@@ -127,7 +128,6 @@ extension ViewController {
                 self.navBarBackground.isHidden = false
                 self.navigationBar.isHidden=false
                 loadModelButton.isHidden = true
-                flashlightButton.isHidden = true
                 showBackButton(false)
                 nextButton.isEnabled = false
                 nextButton.setTitle("Start", for: [])
@@ -163,26 +163,21 @@ extension ViewController {
     func getCameraPose(currentFrame: ARFrame) -> CameraPose {
         var camPos = CameraPose()
         
-//        camPos.eulerAngles = currentFrame.camera.eulerAngles
         camPos.worldQuaternion = sceneView.pointOfView!.simdWorldOrientation
-//        camPos.localQuaternion = sceneView.pointOfView!.simdOrientation
         camPos.worldPose = currentFrame.camera.transform
         camPos.intrinsics = currentFrame.camera.intrinsics
-//        camPos.projectionMatrix = currentFrame.camera.projectionMatrix
-//        camPos.worldToCamera = currentFrame.camera.viewMatrix(for: UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? UIInterfaceOrientation.unknown)
-//        camPos.translation = simd_float3(currentFrame.camera.transform.columns.3.x, currentFrame.camera.transform.columns.3.y, currentFrame.camera.transform.columns.3.z)
         
         return camPos
     }
     
+    /// Capture data from ARFrame (rgb, depth, confidence, pose, ...)
     func captureFrameData() {
         print("Capture frame data...")
-        print(self.currentARFrame.camera.eulerAngles)
-        var currentFrame = currentARFrame!
+        let currentFrame = currentARFrame!
         
-        var colorYTexture: MetalTextureContent = MetalTextureContent()
-        var colorCbCrTexture: MetalTextureContent = MetalTextureContent()
-        var colorRGBATexture: MetalTextureContent = MetalTextureContent()
+        let colorYTexture: MetalTextureContent = MetalTextureContent()
+        let colorCbCrTexture: MetalTextureContent = MetalTextureContent()
+        let colorRGBATexture: MetalTextureContent = MetalTextureContent()
         
         /// RGBA
         colorYTexture.texture = currentFrame.capturedImage.texture(withFormat: .r8Unorm,
@@ -216,64 +211,27 @@ extension ViewController {
         computeEncoder.setTexture(colorCbCrTexture.texture, index: 1)
         computeEncoder.setTexture(RGBTexture, index: 2)
         
-        var threadgroupSize = MTLSizeMake(computePipelineState!.threadExecutionWidth,
+        let threadgroupSize = MTLSizeMake(computePipelineState!.threadExecutionWidth,
                                           computePipelineState!.maxTotalThreadsPerThreadgroup / computePipelineState!.threadExecutionWidth, 1)
         
-        var threadgroupCount = MTLSize(width: Int(ceil(Float(colorRGBATexture.texture!.width) / Float(threadgroupSize.width))),
+        let threadgroupCount = MTLSize(width: Int(ceil(Float(colorRGBATexture.texture!.width) / Float(threadgroupSize.width))),
                                        height: Int(ceil(Float(colorRGBATexture.texture!.height) / Float(threadgroupSize.height))),
                                        depth: 1)
         computeEncoder.dispatchThreadgroups(threadgroupCount, threadsPerThreadgroup: threadgroupSize)
-        
         computeEncoder.endEncoding()
-        
         cmdBuffer.commit()
-        colorRGBATexture.texture = RGBTexture
         
-//
-//        self.mpsScaleFilter?.encode(commandBuffer: cmdBuffer, sourceTexture: self.lastArData!.colorRGBTexture.texture! ,
-//                                    destinationTexture: self.downscaledRGBTexture)
-//
-//        cmdBuffer.commit()
-//
-//        self.lastArData!.downscaledRGBTexture.texture = self.downscaledRGBTexture
-//
-//        self.fileManager!.writeImage(metalTexture: self.lastArData!.downscaledRGBTexture.texture,
-//                                     imageIdx: self.fileCounter,
-//                                     imageIdentifier: "downscaledImage")
-//
-//
-//        let depthPath = self.fileManager!.writeImage(metalTexture: self.lastArData!.depthRGBATexture.texture,
-//                                     imageIdx: self.fileCounter,
-//                                     imageIdentifier: "depth")
-//
-//        let confPathBin = self.fileManager!.writeConfidence(pixelBuffer: self.lastArData!.confidenceImage!, imageIdx: self.fileCounter)
-//
-//        let depthPathBin = self.fileManager!.writeDepth(pixelBuffer: self.lastArData!.depthImage!, imageIdx: self.fileCounter)
-//
+        colorRGBATexture.texture = RGBTexture
+
         let rgbPath = self.fileManager!.writeImage(metalTexture: colorRGBATexture.texture,
                                      imageIdx: self.fileCounter,
                                      imageIdentifier: "image")
-//
-//        let confPath = self.fileManager!.writeImage(metalTexture: self.lastArData!.confRGBATexture.texture,
-//                                     imageIdx: self.fileCounter,
-//                                     imageIdentifier: "confidence")
-        
-        
         let curCamPose = self.getCameraPose(currentFrame: currentFrame)
-
         let savedFrameData = SavedFrame(pose: curCamPose,
                                         rgbPath: rgbPath!,
                                         rgbResolution: [RGBTexture.height,
                                                         RGBTexture.width])
-//
         self.savedFrames.append(savedFrameData)
-//
-//        self.lastArData?.cameraPoses.append(curCamPose)
-//        self.lastArData?.sampleTimes.append(self.lastArData!.sampleTime!)
-//        if projectDepthMap {
-//            self.depthMapToPointcloud(filteringPhase: 1)
-//        }
-//
         self.fileCounter += 1
     }
     

@@ -1,5 +1,7 @@
 /*
 See LICENSE folder for this sample’s licensing information.
+ 
+Modified by Jussi Kalliola (TAU) on 9.1.2023.
 
 Abstract:
 Customized share sheet for exporting scanned AR reference objects.
@@ -26,9 +28,5 @@ class ShareScanViewController: UIActivityViewController {
     
     deinit {
         // Restart the session in case it was interrupted by the share sheet
-//        if let configuration = ViewController.instance?.sceneView.session.configuration,
-//            ViewController.instance?.state == .testing {
-//            ViewController.instance?.sceneView.session.run(configuration)
-//        }
     }
 }

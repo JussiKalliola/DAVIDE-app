@@ -1,8 +1,10 @@
 /*
 See LICENSE folder for this sample’s licensing information.
+ 
+Modified by Jussi Kalliola (TAU) on 9.1.2023.
 
 Abstract:
-Main view controller for the object scanning UI.
+Main view controller for the scanning UI.
 */
 
 import UIKit
@@ -20,6 +22,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     
     static var instance: ViewController?
     
+    // UI Elements
     @IBOutlet weak var sceneView: ARSCNView!
     @IBOutlet weak var navBarBackground: UIVisualEffectView!
     @IBOutlet weak var nextButton: RoundedButton!
@@ -29,7 +32,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var loadModelButton: RoundedButton!
     @IBOutlet weak var saveButton: RoundedButton!
-    @IBOutlet weak var flashlightButton: FlashlightButton!
     @IBOutlet weak var navigationBar: UINavigationBar!
     @IBOutlet weak var sessionInfoView: UIVisualEffectView!
     @IBOutlet weak var sessionInfoLabel: UILabel!
@@ -40,9 +42,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     internal var internalState: State = .notReady
     
     
-    var referenceObjectToMerge: ARReferenceObject?
-    var referenceObjectToTest: ARReferenceObject?
-    
     internal var messageExpirationTimer: Timer?
     internal var startTimeOfLastMessage: TimeInterval?
     internal var expirationTimeOfLastMessage: TimeInterval?
@@ -50,9 +49,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     internal var screenCenter = CGPoint()
     
     var timeOfRun: Double = 0.0
-    var labelTimer = Timer()
     
-    var timer = Timer()
     var currentARFrame: ARFrame!
     
     var textureCache: CVMetalTextureCache!
@@ -61,33 +58,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     
     var fileManager: FileManagerHelper! = nil
     
-    var boxPose: BoxPose = BoxPose()
-    
     var RGBTexture: MTLTexture! = nil
     var metalDevice: MTLDevice! = nil
     var computePipelineState: MTLComputePipelineState! = nil
     
-    let queue = DispatchQueue(label: "save-data", qos: .userInitiated)
+    let queue = DispatchQueue(label: "DAVIDEApp.save-data", qos: .userInitiated)
     
     var capture: ARCapture?
     var motion: CMMotionManager!
     var motionData: CMDeviceMotion = CMDeviceMotion()
     var motionDataArr: [CMDeviceMotion] = []
     
-    // Motion data
-    //let timestamp = validData.timestamp
-    //let attitude = validData.attitude
-    //let quaternion = validData.attitude.quaternion
-    //let rotationRate = validData.rotationRate
-    //let userAcceleration = validData.userAcceleration
-    //let gravity = validData.gravity
-    
     let captureSession = AVCaptureSession()
     let captureDevice = AVCaptureDevice.default(for: .video)
     var deviceInput: AVCaptureDeviceInput!
     let output = AVCaptureVideoDataOutput()
     
-    // to prepare for output; I'll output 640x480 in H.264, via an asset writer
+    // output 1080x1920 in H.264
     let outputSettings: [String: Any] = [
         AVVideoWidthKey: 1080,
         AVVideoHeightKey: 1920,
@@ -96,15 +83,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     
     var assetWriterInput: AVAssetWriterInput!
     
-    // I'm going to push pixel buffers to it, so will need a
-    // AVAssetWriterPixelBufferAdaptor, to expect the same 32BGRA input as I've
-    // asked the AVCaptureVideDataOutput to supply
     let sourcePixelBufferAttributes: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
     var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor!
 
-    // that's going to go somewhere, I imagine you've got the URL for that sorted,
-    // so create a suitable asset writer; we'll put our H.264 within the normal
-    // MPEG4 container
     var assetWriter: AVAssetWriter!
     
     var videoCapture: VideoCapture!
@@ -174,34 +155,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         self.sessionInfoView.isHidden = true
 
         setupNavigationBar()
-    
         
         self.startMotionCapture()
-        
-        //captureSession.sessionPreset = .hd1920x1080
-        //deviceInput = try? AVCaptureDeviceInput(device: captureDevice!)
-        //captureSession.addInput(deviceInput!)
-        
-        //output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
-        //output.setSampleBufferDelegate(self, queue: DispatchQueue(label: "queue"))
-        //captureSession.addOutput(output)
-        
-        //assetWriterInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
-        
-        //pixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: assetWriterInput, sourcePixelBufferAttributes: sourcePixelBufferAttributes)
-        
-        //assetWriter = try? AVAssetWriter(url: fileManager.path!, fileType: AVFileType.mp4)
-        
-        //assetWriter?.add(assetWriterInput)
-
-        // we need to warn the input to expect real time data incoming, so that it tries
-        // to avoid being unavailable at inopportune moments
-        //assetWriterInput.expectsMediaDataInRealTime = true
-
-        // eventually
-        //assetWriter?.startWriting()
-        //assetWriter?.startSession(atSourceTime: CMTime.zero)
-        //captureSession.startRunning()
         
         self.videoCapture = VideoCapture(codec: .h264, width: 1920, height: 1440, path: fileManager.path!, fps: self.fps)
         
@@ -230,35 +185,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
                                                  to: OperationQueue(), withHandler: { (data, error) in
                 // make sure the data is valid before accessing it
                 if let validData = data {
-                    
-                    let timestamp = validData.timestamp
-                    
-                    let attitude = validData.attitude
-                    let quaternion = validData.attitude.quaternion
-                    let rotationRate = validData.rotationRate
-                    let userAcceleration = validData.userAcceleration
-                    let gravity = validData.gravity
-                    
                     self.motionData = validData
-                    
-                    
-                    
-//                    // generate header information to parse later in python
-//                    var header = """
-//                    <BEGINHEADER>
-//                    frameCount:\(String(describing: self.frameCount)),timestamp:\(String(describing: timestamp)),
-//                    quaternionX:\(String(describing: quaternion.x)),quaternionY:\(String(describing: quaternion.y)),
-//                    quaternionZ:\(String(describing: quaternion.z)),quaternionW:\(String(describing: quaternion.w)),
-//                    rotationRateX:\(String(describing: rotationRate.x)),rotationRateY:\(String(describing: rotationRate.y)),
-//                    rotationRateZ:\(String(describing: rotationRate.z)),roll:\(String(describing: attitude.roll)),
-//                    pitch:\(String(describing: attitude.pitch)),yaw:\(String(describing: attitude.yaw)),
-//                    userAccelerationX:\(String(describing: userAcceleration.x)),userAccelerationY:\(String(describing: userAcceleration.y)),
-//                    userAccelerationZ:\(String(describing: userAcceleration.z)),gravityX:\(String(describing: gravity.x)),
-//                    gravityY:\(String(describing: gravity.y)),gravityZ:\(String(describing: gravity.z))
-//                    <ENDHEADER>
-//                    """
-//
-//                    print(header)
                 }
             })
         }
@@ -291,7 +218,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         nextButton.isEnabled = true
         nextButton.isHidden = false
         loadModelButton.isHidden = true
-        flashlightButton.isHidden = true
         nextButton.setTitle("Start", for: [])
     }
     
@@ -316,8 +242,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     }
     
     @IBAction func addScanButtonTapped(_ sender: Any) {
-//        guard state == .testing else { return }
-
         let title = "Merge another scan?"
         let message = """
             Merging multiple scan results improves detection.
@@ -350,57 +274,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     }
     
 
-    func shareFiles() {
-        print("Share files....")
-        //arProvider.pause()
-        //self.queue.async {
-        
-        let operationQueue = OperationQueue()
-        operationQueue.maxConcurrentOperationCount = 8
-
-        do {
-
-//            let savedFrames = self.savedFrames
-//            var cameraPoses: [CameraPose] = []
-//            for frame in savedFrames {
-//                let sourceImgPath = self.fileManager!.path!.path + "/" + frame.rgbPath
-//                let targetImgPath =  self.fileManager!.path!.path + "/rgb/" + frame.rgbPath.dropLast(4) + ".jpeg"
-//
-//                cameraPoses.append(frame.pose)
-//
-//                operationQueue.addOperation {
-//                    self.fileManager?.convertBinToJpeg(sourceFilePath: sourceImgPath,
-//                                                             targetFilePath: targetImgPath,
-//                                                             width: frame.rgbResolution[1],
-//                                                             height: frame.rgbResolution[0],
-//                                                             orientation: .portrait)
-//                }
-//            }
-
-
-            operationQueue.addOperation {
-                self.fileManager?.writeCameraPose(cameraPoses: self.cameraPoses, motionData: self.motionDataArr)
-                self.fileManager?.writeFrameInfo(cameraPoses: self.cameraPoses)
-            }
-        } catch {
-            print("error")
-        }
-
-
-        operationQueue.waitUntilAllOperationsAreFinished()
-        
-        
-        //DispatchQueue.main.async {
-        var filesToShare = [Any]()
-        filesToShare.append(self.fileManager!.path)
-        let av = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
-
-        UIApplication.shared.keyWindow?.rootViewController?.present(av, animated: true, completion: nil)
-        //}
-        //}
-    }
-    
-
     @IBAction func loadModelButtonTapped(_ sender: Any) {
         guard !loadModelButton.isHidden && loadModelButton.isEnabled else { return }
         
@@ -411,17 +284,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         
         loadModelButton.isEnabled = true
         nextButton.isEnabled = true
-        
-//        let documentPicker = UIDocumentPickerViewController(documentTypes: ["com.pixar.universal-scene-description-mobile"], in: .import)
-//        documentPicker.delegate = self
-//
-//        documentPicker.modalPresentationStyle = .overCurrentContext
-//        documentPicker.popoverPresentationController?.sourceView = self.loadModelButton
-//        documentPicker.popoverPresentationController?.sourceRect = self.loadModelButton.bounds
-//
-//        DispatchQueue.main.async {
-//            self.present(documentPicker, animated: true, completion: nil)
-//        }
+
     }
     
     @IBAction func leftButtonTouchAreaTapped(_ sender: Any) {
@@ -429,15 +292,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         //  on the button that is currently visible at that location.
         if !loadModelButton.isHidden {
             loadModelButtonTapped(self)
-        } else if !flashlightButton.isHidden {
-            toggleFlashlightButtonTapped(self)
         }
     }
     
-    @IBAction func toggleFlashlightButtonTapped(_ sender: Any) {
-        guard !flashlightButton.isHidden && flashlightButton.isEnabled else { return }
-        flashlightButton.toggledOn = !flashlightButton.toggledOn
-    }
     
     @IBAction func toggleInstructionsButtonTapped(_ sender: Any) {
         guard !toggleInstructionsButton.isHidden && toggleInstructionsButton.isEnabled else { return }
@@ -497,14 +354,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         
         
         camPos.timeStamp = CMTimeMake(value: frameCount, timescale: fps)
-//        camPos.eulerAngles = currentFrame.camera.eulerAngles
         camPos.worldQuaternion = sceneView.pointOfView!.simdWorldOrientation
-//        camPos.localQuaternion = sceneView.pointOfView!.simdOrientation
         camPos.worldPose = currentFrame.camera.transform
         camPos.intrinsics = currentFrame.camera.intrinsics
-//        camPos.projectionMatrix = currentFrame.camera.projectionMatrix
-//        camPos.worldToCamera = currentFrame.camera.viewMatrix(for: UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? UIInterfaceOrientation.unknown)
-//        camPos.translation = simd_float3(currentFrame.camera.transform.columns.3.x, currentFrame.camera.transform.columns.3.y, currentFrame.camera.transform.columns.3.z)
         
         return camPos
     }
@@ -515,11 +367,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
         self.currentARFrame = frame
         
         if self.videoCapture.ready {
-            //queue.async {
             self.videoCapture.appendToVideo(pixelBuffer: frame.capturedImage, frameCount: self.frameCount)
             self.cameraPoses.append(self.capturePose(currentFrame: frame, frameCount: self.frameCount, fps: self.fps))
             self.motionDataArr.append(self.motionData)
-            //queue.async {
+            
             if #available(iOS 14.0, *) {
                 if let depth = frame.sceneDepth?.depthMap {
                     print("saving depth frame.")
@@ -529,21 +380,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
             } else {
                 // Fallback on earlier versions
             }
-            //}
+
             self.frameCount += 1
             DispatchQueue.global().async(execute: {
                 DispatchQueue.main.async {
 
                     let xyz = self.cameraPoses.last!.worldPose.columns.3.xyz
                     self.statsLabel.text = "Time: "+String(self.frameCount / Int64(self.fps))+" sec"+"\nFrames: "+String(self.frameCount)+"\nX="+String(round(100*xyz.x) / 100)+"\nY="+String(round(100*xyz.y) / 100)+"\nZ="+String(round(100*xyz.z) / 100)
-                    // etc
                 }
              })
-            //}
         }
-        //print(frame.camera.transform.columns.3)
-        //print(sceneView.pointOfView?.simdWorldPosition)
-        //print(self.scan?.scannedObject.boundingBox?.simdWorldPosition)
 
     }
     
@@ -553,5 +399,33 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, UI
     
     func readFile(_ url: URL) {
 
+    }
+    
+    
+    // Save files from temporary storage
+    func shareFiles() {
+        print("Share files....")
+        
+        let operationQueue = OperationQueue()
+        operationQueue.maxConcurrentOperationCount = 8
+
+        do {
+            operationQueue.addOperation {
+                self.fileManager?.writeCameraPose(cameraPoses: self.cameraPoses, motionData: self.motionDataArr)
+                self.fileManager?.writeFrameInfo(cameraPoses: self.cameraPoses)
+            }
+        } catch {
+            print("error")
+        }
+
+
+        operationQueue.waitUntilAllOperationsAreFinished()
+        
+        
+        var filesToShare = [Any]()
+        filesToShare.append(self.fileManager!.path)
+        let av = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
+
+        UIApplication.shared.keyWindow?.rootViewController?.present(av, animated: true, completion: nil)
     }
 }

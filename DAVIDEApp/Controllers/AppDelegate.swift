@@ -1,6 +1,8 @@
 /*
 See LICENSE folder for this sample’s licensing information.
 
+Modified by Jussi Kalliola (TAU) on 9.1.2023.
+ 
 Abstract:
 Main application delegate.
 */
@@ -47,13 +49,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationWillResignActive(_ application: UIApplication) {
         if let viewController = self.window?.rootViewController as? ViewController {
-            //viewController.blurView?.isHidden = false
+
         }
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
         if let viewController = self.window?.rootViewController as? ViewController {
-            //viewController.blurView?.isHidden = true
+
         }
     }
 }

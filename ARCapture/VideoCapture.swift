@@ -3,7 +3,6 @@
 //  DAVIDEApp
 //
 //  Created by Jussi Kalliola (TAU) on 30.1.2023.
-//  Copyright © 2023 Apple. All rights reserved.
 //
 
 import Foundation
@@ -45,6 +44,8 @@ class VideoCapture {
         
         self.assetwriter=assetwriter
         
+        
+        // Define settings and init asset writer
         self.assetWriterSettings = [AVVideoCodecKey: codec, AVVideoWidthKey: width, AVVideoHeightKey: height] as [String : Any]
         self.assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: self.assetWriterSettings)
         self.assetWriterAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: self.assetWriterInput)
@@ -76,6 +77,7 @@ class VideoCapture {
         
     }
     
+    /// Append pixelbuffer to video file
     public func appendToVideo(pixelBuffer: CVPixelBuffer, frameCount: Int64) {
         if self.assetWriterInput.isReadyForMoreMediaData {
             let frameTime = CMTimeMake(value: frameCount, timescale: self.fps)

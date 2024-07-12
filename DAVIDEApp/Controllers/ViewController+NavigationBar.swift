@@ -1,5 +1,7 @@
 /*
 See LICENSE folder for this sample’s licensing information.
+ 
+Modified by Jussi Kalliola (TAU) on 9.1.2023.
 
 Abstract:
 Navigation bar management for the main view controller.

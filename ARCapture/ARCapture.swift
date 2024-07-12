@@ -1,16 +1,14 @@
 //
 //  ARCapture.swift
-//  ARCapture framework
+//  DAVIDEApp
 //
 //  Created by Volkov Alexander on 6/6/21.
+//  Modified by Jussi Kalliola (TAU) on 9.1.2023.
 //
 
 import Foundation
 import ARKit
 import Photos
-
-// dodo
-//AVAudioSession.sharedInstance().setActive(false, options: [])
 
 /// The delegate protocol
 public protocol ARCaptureDelegate: class {
@@ -35,11 +33,7 @@ open class ARCapture {
         }
     }
     
-    public enum AudioPermissions {
-        case unknown, enabled, disabled
-    }
-    
-    private let queue = DispatchQueue(label: "ARCapture")
+    private let queue = DispatchQueue(label: "DAVIDEApp.queue")
     
     /// the delegate
     weak public var delegate: ARCaptureDelegate?
@@ -50,8 +44,6 @@ open class ARCapture {
     private var displayTimer: CADisplayLink!
     
     var status: Status = .ready
-    private var audioPermissions: AudioPermissions = .unknown
-    private var recordAudio: Bool = true
     
     private var assetCreator: ARAssetCreator?
     private var frameGenerator: ARFrameGenerator?
@@ -90,37 +82,6 @@ open class ARCapture {
     public func start(captureType: ARFrameGenerator.CaptureType? = nil) {
         let type: ARFrameGenerator.CaptureType = captureType ?? (ARCapture.Orientation.isPortrait ? .renderOriginal : .imageCapture)
         frameGenerator = ARFrameGenerator(captureType: type)
-//        if let currentFrame = view.session.currentFrame {
-            
-//            // Match clipping
-//            renderer.pointOfView?.camera?.zNear = 0.001
-//            renderer.pointOfView?.camera?.zFar = 1000
-//
-//            // Match projection
-//            let viewportSize = CGSize(width: view.currentViewport.size.height, height: view.currentViewport.size.width)
-//            let orientation: UIInterfaceOrientation = ARCapture.Orientation.isLandscapeLeft ? .landscapeLeft : (ARCapture.Orientation.isLandscapeRight ? .landscapeRight : .portrait)
-//            let projection = SCNMatrix4(currentFrame.camera.projectionMatrix(for: orientation, viewportSize: viewportSize, zNear: 0.001, zFar: 1000))
-//            renderer.pointOfView?.camera?.projectionTransform = projection
-//
-//            // Match transform
-//            renderer.pointOfView?.simdTransform = currentFrame.camera.viewMatrix(for: orientation).inverse
-            
-//            // Match clipping
-//            renderer.pointOfView?.camera?.zNear = 0.001
-//            renderer.pointOfView?.camera?.zFar = 1000
-//
-//            // Match projection
-//            let projection = SCNMatrix4(currentFrame.camera.projectionMatrix(for: .landscapeLeft, viewportSize: view.currentViewport.size, zNear: 0.001, zFar: 1000))
-//            renderer.pointOfView?.camera?.projectionTransform = projection
-//
-//            // Match transform
-//            renderer.pointOfView?.simdTransform = currentFrame.camera.viewMatrix(for: .landscapeLeft).inverse
-//        }
-        
-        tryEnableAudio { [weak self] in
-            self?.status = .recording
-            self?.displayTimer.isPaused = false
-        }
     }
     
     /// Stop and add video to library if `complete` is provided.
@@ -211,15 +172,6 @@ open class ARCapture {
         needToPause = true
     }
     
-    /// Enable/disable audio capture for the video
-    /// - Parameter enable: true - will include audio in the video, false - disable
-    public func recordAudio(enable: Bool) {
-        self.recordAudio = enable
-        if enable && status != .ready {
-            tryEnableAudio { }
-        }
-    }
-    
     /// Process frame
     @objc func processFrame() {
         guard status.isCapturing() else { return }
@@ -255,7 +207,7 @@ open class ARCapture {
                             outputURL: url,
                             size: size, captureType: self!.frameGenerator!.captureType,
                             optimizeForNetworkUs: false,
-                            audioEnabled: self!.recordAudio,
+                            audioEnabled: false,
                             queue: self!.queue,
                             mixWithOthers: false)
                     }
@@ -291,21 +243,6 @@ open class ARCapture {
             return CMTimeSubtract(time, sum)
         }
         return time
-    }
-    
-    // MARK: -  Private
-
-    /// Try enable audio recording
-    /// - Parameter callback: the callback invoken when done
-    private func tryEnableAudio(callback: @escaping ()->()) {
-        switch audioPermissions {
-        case .enabled, .disabled: callback()
-        case .unknown:
-            AVAudioSession.sharedInstance().requestRecordPermission({ [weak self] status in
-                self?.audioPermissions = status ? .enabled : .disabled
-                callback()
-            })
-        }
     }
 }
 

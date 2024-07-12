@@ -1,6 +1,6 @@
 //
 //  EnvironmentVariables.swift
-//  DigitalMicroAirport
+//  DAVIDEApp
 //
 //  Created by Jussi Kalliola (TAU) on 29.9.2022.
 //
@@ -16,6 +16,7 @@ class EnvironmentVariables {
     let metalDevice: MTLDevice
     let metalCommandQueue: MTLCommandQueue
     let metalLibrary: MTLLibrary
+    
     private init() {
         guard let metalDevice = MTLCreateSystemDefaultDevice() else {
             fatalError("Error creating metal device")

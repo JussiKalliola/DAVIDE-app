@@ -62,3 +62,4 @@ Description of Frames.txt
 Parts of this repo is inspired by the following repositories and sample codes:
 - [Scanning and detecting 3D objects (Apple Sample Code)](https://developer.apple.com/documentation/arkit/arkit_in_ios/content_anchors/scanning_and_detecting_3d_objects)
 - [HNDR](https://github.com/princeton-computational-imaging/HNDR)
+- [Icon by Eucalyp, FlatIcon. Borrowed and edited](https://www.flaticon.com/free-icons/recording)

@@ -99,19 +99,6 @@
                                     <action selector="loadModelButtonTapped:" destination="BV1-FR-VrT" eventType="touchUpInside" id="6ai-f3-gVp"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZkM-BT-CgT" userLabel="Flashlight toggle" customClass="FlashlightButton" customModule="DAVIDEApp" customModuleProvider="target">
-                                <rect key="frame" x="20" y="807" width="110" height="45"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="110" id="Gdr-yU-PTF"/>
-                                    <constraint firstAttribute="height" constant="45" id="QUe-Fa-GG8"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <state key="normal" title="Light Off"/>
-                                <state key="selected" image="addPressed"/>
-                                <connections>
-                                    <action selector="toggleFlashlightButtonTapped:" destination="BV1-FR-VrT" eventType="touchUpInside" id="O8E-BF-Sil"/>
-                                </connections>
-                            </button>
                             <visualEffectView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EiA-XD-X8R" userLabel="Session Info View">
                                 <rect key="frame" x="417" y="94" width="190" height="68"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="g0f-IE-Nfz">
@@ -227,7 +214,6 @@
                             </constraint>
                             <constraint firstItem="t88-em-YKH" firstAttribute="trailing" secondItem="MRb-bZ-YPJ" secondAttribute="trailing" id="NmW-HE-dfY"/>
                             <constraint firstItem="Ug5-TJ-D8K" firstAttribute="centerX" secondItem="t88-em-YKH" secondAttribute="centerX" id="RDX-jU-pV5"/>
-                            <constraint firstItem="ZkM-BT-CgT" firstAttribute="centerY" secondItem="Emj-yh-Wao" secondAttribute="centerY" id="SZm-xA-iCk"/>
                             <constraint firstItem="t88-em-YKH" firstAttribute="bottom" secondItem="Ug5-TJ-D8K" secondAttribute="bottom" constant="135" id="StB-Vx-2up"/>
                             <constraint firstItem="EiA-XD-X8R" firstAttribute="centerX" secondItem="t88-em-YKH" secondAttribute="centerX" id="Ug3-tj-L44"/>
                             <constraint firstItem="nsN-wC-uuj" firstAttribute="top" secondItem="hbm-Ig-0N9" secondAttribute="top" id="Vug-1D-aOj"/>
@@ -235,10 +221,8 @@
                             <constraint firstItem="nsN-wC-uuj" firstAttribute="bottom" secondItem="zK5-Be-vZh" secondAttribute="bottom" id="Zna-cx-mVq"/>
                             <constraint firstItem="OaE-RQ-EVR" firstAttribute="centerY" secondItem="Emj-yh-Wao" secondAttribute="centerY" id="cCm-hD-zWE"/>
                             <constraint firstItem="t88-em-YKH" firstAttribute="bottom" secondItem="p0C-F0-p11" secondAttribute="bottom" constant="-40" id="cR0-rT-ueR"/>
-                            <constraint firstItem="Emj-yh-Wao" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ZkM-BT-CgT" secondAttribute="trailing" constant="8" symbolic="YES" id="pLX-md-ebQ"/>
                             <constraint firstItem="bG7-IC-Bnx" firstAttribute="top" secondItem="Ezt-cs-e2Q" secondAttribute="bottom" constant="20" id="pbd-55-5AK"/>
                             <constraint firstItem="OaE-RQ-EVR" firstAttribute="leading" secondItem="t88-em-YKH" secondAttribute="leading" constant="20" id="q27-oD-8Zk"/>
-                            <constraint firstItem="ZkM-BT-CgT" firstAttribute="leading" secondItem="t88-em-YKH" secondAttribute="leading" constant="20" id="vcZ-h5-BRh"/>
                             <constraint firstAttribute="trailing" secondItem="nsN-wC-uuj" secondAttribute="trailing" id="xK9-dV-EWe"/>
                             <constraint firstItem="t88-em-YKH" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ug5-TJ-D8K" secondAttribute="trailing" constant="20" id="zTR-DE-sJ6">
                                 <variation key="widthClass=regular" constant="120"/>
@@ -246,7 +230,6 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="flashlightButton" destination="ZkM-BT-CgT" id="Le2-OU-xfN"/>
                         <outlet property="instructionLabel" destination="xZB-0J-nhW" id="qV9-M7-Lrg"/>
                         <outlet property="instructionView" destination="Ug5-TJ-D8K" id="gzu-p2-19I"/>
                         <outlet property="loadModelButton" destination="OaE-RQ-EVR" id="YUd-h0-BzI"/>
@@ -307,9 +290,6 @@
         </designable>
         <designable name="OaE-RQ-EVR">
             <size key="intrinsicContentSize" width="80" height="30"/>
-        </designable>
-        <designable name="ZkM-BT-CgT">
-            <size key="intrinsicContentSize" width="61" height="30"/>
         </designable>
         <designable name="bG7-IC-Bnx">
             <size key="intrinsicContentSize" width="30" height="30"/>
