@@ -1,9 +1,8 @@
 //
 //  VideoCapture.swift
-//  ScanningApp
+//  DAVIDEApp
 //
 //  Created by Jussi Kalliola (TAU) on 30.1.2023.
-//  Copyright © 2023 Apple. All rights reserved.
 //
 
 import Foundation
@@ -19,6 +18,9 @@ class VideoCapture {
     var outputVideoPath: URL!
     
     var fps: Int32 = 60
+    
+    var frameCount: Int64 = 0
+    var frameTime: CMTime = CMTime.zero
     
     var ready: Bool = false
     
@@ -42,6 +44,8 @@ class VideoCapture {
         
         self.assetwriter=assetwriter
         
+        
+        // Define settings and init asset writer
         self.assetWriterSettings = [AVVideoCodecKey: codec, AVVideoWidthKey: width, AVVideoHeightKey: height] as [String : Any]
         self.assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: self.assetWriterSettings)
         self.assetWriterAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: self.assetWriterInput)
@@ -62,18 +66,26 @@ class VideoCapture {
     
     public func stop() {
         self.ready=false
+    }
+    
+    public func finish() {
+        self.ready=false
         self.assetWriterInput.markAsFinished()
         self.assetwriter.finishWriting {
             print("Finished video location: \(self.outputVideoPath.path)")
         }
+        
     }
     
+    /// Append pixelbuffer to video file
     public func appendToVideo(pixelBuffer: CVPixelBuffer, frameCount: Int64) {
         if self.assetWriterInput.isReadyForMoreMediaData {
             let frameTime = CMTimeMake(value: frameCount, timescale: self.fps)
             
             assetWriterAdaptor.append(pixelBuffer, withPresentationTime: frameTime)
-            print("appended pixelbuffer at frame \(frameCount)")
+            self.frameCount = frameCount
+            self.frameTime = frameTime
+            print("appended pixelbuffer at frame \(frameCount) at time \(frameTime)")
         } else {
             print("assetWriterInput is not ready for more media data now...")
         }
