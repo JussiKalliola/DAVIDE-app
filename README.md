@@ -9,7 +9,7 @@ bibtex
 
 ## Getting the App Running
 
-1. Open the .xcworkspace project file with Xcode (tested for Xcode 15).
+1. Open the .xcodeproj project file with Xcode (tested for Xcode 15).
 2. Set up signing and provisioning. You'll have to make an Apple developer account if you don't have one already. Check the `Automatically manage signing` box to simplify the process.
 
 ![xcode signing](Documentation/xcode.png)
