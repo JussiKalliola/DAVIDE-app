@@ -1,11 +1,25 @@
 # DAVIDE App
+[![Project Page](https://img.shields.io/badge/Project%20Page-DAVIDE-blue)](https://germanftv.github.io/ParallaxICB.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2409.01274)
 
-This is the official code repository for the iOS application developed for **ARTICLE**: [LINK TO ARTICLE](https://google.com)
+This repository contains the official iOS application for recording synchronized RGB-D videos, which were used to create the DAVIDE dataset introduced in the paper **"DAVIDE: Depth-Aware Video Deblurring" (ECCVW 2024)**.
 
-If you use parts of this work, or otherwise take inspiration from it, please consider citing the thesis:
-```
-bibtex
-```
+<p align="center">
+  <img width="200" src="DAVIDEApp/Assets.xcassets/AppIcon.appiconset/icon-DAVIDE-app.png">
+</p>
+
+ ### [Project Page](https://germanftv.github.io/DAVIDE.github.io/) | [arXiv](https://arxiv.org/abs/2409.01274) | [Benchmark Repository](https://github.com/germanftv/DAVIDE-Benckmark) | [Dataset Synthesis Repository](https://github.com/germanftv/DAVIDE-Synthesis.git) | [Data Access Form](https://docs.google.com/forms/d/e/1FAIpQLSeQ2w4xsoIkzJ6kNseSiHkMaj303_tXRs2v23wqF3chfSF1FQ/viewform?usp=header)
+
+## Citation
+
+If you use parts of this work, or otherwise take inspiration from it, please consider citing:
+
+    @article{torres2024davide,
+        title={DAVIDE: Depth-Aware Video Deblurring},
+        author={Torres, German F and Kalliola, Jussi and Tripathy, Soumya and Acar, Erman and K{\"a}m{\"a}r{\"a}inen, Joni-Kristian},
+        journal={arXiv preprint arXiv:2409.01274},
+        year={2024}
+        }
 
 ## Getting the App Running
 
@@ -56,6 +70,15 @@ Description of Frames.txt
 | Rotation Rate | [Core Motion rotationRate](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1615967-rotationrate) | Rotation rate of the device (x,y,z) |
 | Accelerometer | [Core Motion Acceleration](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616149-useracceleration) | The acceleration that the user is giving to the device (x, y, z) |
 | Gravity | [Core Motion Gravity](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity) | The gravity acceleration vector expressed in the device's reference frame. (x, y, z)  |
+
+## Other Resources
+
+1. [**Benchmark Repository**](https://github.com/germanftv/DAVIDE-Benckmark): Contains the source code for benchmarking deep video deblurring methods on the DAVIDE dataset.
+
+2. [**Dataset Synthesis Repository**](https://github.com/germanftv/DAVIDE-Synthesis.git): Provides the source code to synthesize the Depth-Aware VIdeo DEblurring (DAVIDE) dataset from raw captured videos.
+
+3. [**Data Access Form**](https://docs.google.com/forms/d/e/1FAIpQLSeQ2w4xsoIkzJ6kNseSiHkMaj303_tXRs2v23wqF3chfSF1FQ/viewform?usp=header): Submit this form to request access to the released DAVIDE dataset and related resources.
+
 
 ## Acknowledgements
 
